@@ -1,0 +1,62 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*' # Trigger saat push tag seperti v1.0.0
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest' # Untuk .app dan .dmg
+            args: ''
+          - platform: 'windows-latest' # Untuk .exe dan .msi
+            args: ''
+          - platform: 'ubuntu-22.04' # Untuk .deb dan AppImage
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Setup Bun
+      - uses: oven-sh/setup-bun@v1
+        with:
+          berry-version: latest
+
+      # 2. Setup Rust
+      - name: setup rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      # 3. Install dependencies Linux (Wajib untuk Debian/Ubuntu)
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      # 4. Install Frontend Dependencies
+      - name: install frontend dependencies
+        run: bun install
+
+      # 5. Build dan Release
+      - name: build and release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Bel Sekolah v__VERSION__"
+          releaseBody: "Otomatis rilis untuk versi ${{ github.ref_name }}"
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
