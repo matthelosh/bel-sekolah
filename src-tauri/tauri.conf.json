@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "bel-sekolah",
+        "title": "Bel Sekolah v0.1.0",
         "width": 1024,
         "height": 800,
         "resizable": true,
@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost; audio-src 'self' asset: https://asset.localhost; media-src 'self' asset: https://asset.localhost"
+      "csp": null
     }
   },
   "bundle": {
@@ -33,7 +33,8 @@
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
-      "icons/icon.ico"
+      "icons/icon.ico",
+      "icons/icon.svg"
     ]
   },
   "plugins": {
