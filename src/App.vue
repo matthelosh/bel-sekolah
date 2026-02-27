@@ -73,7 +73,7 @@ const checkTime = () => {
     if(status.value.isPlaying) {
       togglePause();
     }
-    console.log(match)
+    //console.log(match)
     playBell('lonceng', match.suara);
 
     togglePause();
