@@ -27,7 +27,6 @@
     "active": true,
     "targets": ["msi", "nsis"],
     "resources": [
-      "../public/lagunasional"
     ],
     "icon": [
       "icons/32x32.png",
