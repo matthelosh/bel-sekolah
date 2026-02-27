@@ -1,0 +1,48 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Izin standar aplikais bel sekolah",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "fs:default",
+    "core:path:allow-join",
+    "core:path:allow-resolve",
+    "core:webview:allow-set-webview-zoom",
+    "fs:allow-read-dir",
+    "fs:allow-stat",
+    "fs:allow-resource-read-recursive",
+    "fs:scope-resource-recursive",
+    "fs:allow-resource-write-recursive",
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [{ "path": "$DOCUMENT/bel/lagunasional/*" }]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [{ "path": "$DOCUMENT/**" }]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [{ "path": "$DOCUMENT/**" }]
+    },
+    {
+      "identifier": "fs:allow-write-text-file", 
+      "allow": [{ "path": "$DOCUMENT/**" }]
+    },
+    "fs:allow-document-read-recursive",
+    "fs:allow-document-write-recursive",
+    {
+      "identifier": "fs:scope-document-recursive",
+      "allow": [{ "path": "$DOCUMENT/*" }]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        { "path": "$DOCUMENT/bel/**/*" },
+        { "path": "$DOCUMENT/bel"}
+      ]
+    }
+  ]
+}

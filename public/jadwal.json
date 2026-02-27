@@ -1,0 +1,405 @@
+{
+  "Senin": 
+  [
+    {
+      "waktu": "14:25",
+      "kegiatan": "Jam Pertama",
+      "suara": "jamke_1.mp3"
+    },
+    {
+      "waktu": "07:35",
+      "kegiatan": "Jam Kedua",
+      "suara": "jamke_2.mp3"
+    },
+    {
+      "waktu": "08:10",
+      "kegiatan": "Jam Ketiga",
+      "suara": "jamke_3.mp3"
+    },
+    {
+      "waktu": "08:45",
+      "kegiatan": "Jam Keempat",
+      "suara": "jamke_4.mp3"
+    },
+    {
+      "waktu": "09:20",
+      "kegiatan": "Istirahat Pertama",
+      "suara": "istirahat.mp3"
+    },
+    {
+      "waktu": "09:55",
+      "kegiatan": "Jam Kelima",
+      "suara": "jamke_5.mp3"
+    },
+    {
+      "waktu": "10:30",
+      "kegiatan": "Jam Keenam",
+      "suara": "jamke_6.mp3"
+    },
+    {
+      "waktu": "11:05",
+      "kegiatan": "Jam Ketujuh",
+      "suara": "jamke_7.mp3"
+    },
+    {
+      "waktu": "11:40",
+      "kegiatan": "Jam Kedelapan",
+      "suara": "jamke_8.mp3"
+    },
+    {
+      "waktu": "12:25",
+      "kegiatan": "Jam Shalat Dhuhur",
+      "suara": "dhuhur.mp3"
+    },
+    {
+      "waktu": "12.45",
+      "kegiatan": "Jam Kesembilan",
+      "suara": "jamke_9.mp3"
+    },{
+      "waktu": "13:20",
+      "kegiatan": "Jam Kesepuluh",
+      "suara": "jamke_10.mp3"
+    },
+    {
+      "waktu": "13:55",
+      "kegiatan": "Pulang",
+      "suara": "pulang.mp3"
+    }
+  ],
+  "Selasa": 
+  [
+    {
+      "waktu": "14:25",
+      "kegiatan": "Jam Pertama",
+      "suara": "jamke_1.mp3"
+    },
+    {
+      "waktu": "07:35",
+      "kegiatan": "Jam Kedua",
+      "suara": "jamke_2.mp3"
+    },
+    {
+      "waktu": "08:10",
+      "kegiatan": "Jam Ketiga",
+      "suara": "jamke_3.mp3"
+    },
+    {
+      "waktu": "08:45",
+      "kegiatan": "Jam Keempat",
+      "suara": "jamke_4.mp3"
+    },
+    {
+      "waktu": "09:20",
+      "kegiatan": "Istirahat Pertama",
+      "suara": "istirahat.mp3"
+    },
+    {
+      "waktu": "09:55",
+      "kegiatan": "Jam Kelima",
+      "suara": "jamke_5.mp3"
+    },
+    {
+      "waktu": "10:30",
+      "kegiatan": "Jam Keenam",
+      "suara": "jamke_6.mp3"
+    },
+    {
+      "waktu": "11:05",
+      "kegiatan": "Jam Ketujuh",
+      "suara": "jamke_7.mp3"
+    },
+    {
+      "waktu": "11:40",
+      "kegiatan": "Jam Kedelapan",
+      "suara": "jamke_8.mp3"
+    },
+    {
+      "waktu": "12:25",
+      "kegiatan": "Jam Shalat Dhuhur",
+      "suara": "dhuhur.mp3"
+    },
+    {
+      "waktu": "12.45",
+      "kegiatan": "Jam Kesembilan",
+      "suara": "jamke_9.mp3"
+    },{
+      "waktu": "13:20",
+      "kegiatan": "Jam Kesepuluh",
+      "suara": "jamke_10.mp3"
+    },
+    {
+      "waktu": "13:55",
+      "kegiatan": "Pulang",
+      "suara": "pulang.mp3"
+    }
+  ],
+  "Rabu": 
+  [
+    {
+      "waktu": "14:25",
+      "kegiatan": "Jam Pertama",
+      "suara": "jamke_1.mp3"
+    },
+    {
+      "waktu": "07:35",
+      "kegiatan": "Jam Kedua",
+      "suara": "jamke_2.mp3"
+    },
+    {
+      "waktu": "08:10",
+      "kegiatan": "Jam Ketiga",
+      "suara": "jamke_3.mp3"
+    },
+    {
+      "waktu": "08:45",
+      "kegiatan": "Jam Keempat",
+      "suara": "jamke_4.mp3"
+    },
+    {
+      "waktu": "09:20",
+      "kegiatan": "Istirahat Pertama",
+      "suara": "istirahat.mp3"
+    },
+    {
+      "waktu": "09:55",
+      "kegiatan": "Jam Kelima",
+      "suara": "jamke_5.mp3"
+    },
+    {
+      "waktu": "10:30",
+      "kegiatan": "Jam Keenam",
+      "suara": "jamke_6.mp3"
+    },
+    {
+      "waktu": "11:05",
+      "kegiatan": "Jam Ketujuh",
+      "suara": "jamke_7.mp3"
+    },
+    {
+      "waktu": "11:40",
+      "kegiatan": "Jam Kedelapan",
+      "suara": "jamke_8.mp3"
+    },
+    {
+      "waktu": "12:25",
+      "kegiatan": "Jam Shalat Dhuhur",
+      "suara": "dhuhur.mp3"
+    },
+    {
+      "waktu": "12.45",
+      "kegiatan": "Jam Kesembilan",
+      "suara": "jamke_9.mp3"
+    },{
+      "waktu": "13:20",
+      "kegiatan": "Jam Kesepuluh",
+      "suara": "jamke_10.mp3"
+    },
+    {
+      "waktu": "13:55",
+      "kegiatan": "Pulang",
+      "suara": "pulang.mp3"
+    }
+  ],
+  "Kamis": 
+  [
+    {
+      "waktu": "14:25",
+      "kegiatan": "Jam Pertama",
+      "suara": "jamke_1.mp3"
+    },
+    {
+      "waktu": "07:35",
+      "kegiatan": "Jam Kedua",
+      "suara": "jamke_2.mp3"
+    },
+    {
+      "waktu": "08:10",
+      "kegiatan": "Jam Ketiga",
+      "suara": "jamke_3.mp3"
+    },
+    {
+      "waktu": "08:45",
+      "kegiatan": "Jam Keempat",
+      "suara": "jamke_4.mp3"
+    },
+    {
+      "waktu": "09:20",
+      "kegiatan": "Istirahat Pertama",
+      "suara": "istirahat.mp3"
+    },
+    {
+      "waktu": "09:55",
+      "kegiatan": "Jam Kelima",
+      "suara": "jamke_5.mp3"
+    },
+    {
+      "waktu": "10:30",
+      "kegiatan": "Jam Keenam",
+      "suara": "jamke_6.mp3"
+    },
+    {
+      "waktu": "11:05",
+      "kegiatan": "Jam Ketujuh",
+      "suara": "jamke_7.mp3"
+    },
+    {
+      "waktu": "11:40",
+      "kegiatan": "Jam Kedelapan",
+      "suara": "jamke_8.mp3"
+    },
+    {
+      "waktu": "12:25",
+      "kegiatan": "Jam Shalat Dhuhur",
+      "suara": "dhuhur.mp3"
+    },
+    {
+      "waktu": "12.45",
+      "kegiatan": "Jam Kesembilan",
+      "suara": "jamke_9.mp3"
+    },{
+      "waktu": "13:20",
+      "kegiatan": "Jam Kesepuluh",
+      "suara": "jamke_10.mp3"
+    },
+    {
+      "waktu": "13:55",
+      "kegiatan": "Pulang",
+      "suara": "pulang.mp3"
+    }
+  ],
+  "Jumat": 
+  [
+    {
+      "waktu": "14:25",
+      "kegiatan": "Jam Pertama",
+      "suara": "jamke_1.mp3"
+    },
+    {
+      "waktu": "07:35",
+      "kegiatan": "Jam Kedua",
+      "suara": "jamke_2.mp3"
+    },
+    {
+      "waktu": "08:10",
+      "kegiatan": "Jam Ketiga",
+      "suara": "jamke_3.mp3"
+    },
+    {
+      "waktu": "08:45",
+      "kegiatan": "Jam Keempat",
+      "suara": "jamke_4.mp3"
+    },
+    {
+      "waktu": "09:20",
+      "kegiatan": "Istirahat Pertama",
+      "suara": "istirahat.mp3"
+    },
+    {
+      "waktu": "09:55",
+      "kegiatan": "Jam Kelima",
+      "suara": "jamke_5.mp3"
+    },
+    {
+      "waktu": "10:30",
+      "kegiatan": "Jam Keenam",
+      "suara": "jamke_6.mp3"
+    },
+    {
+      "waktu": "11:05",
+      "kegiatan": "Jam Ketujuh",
+      "suara": "jamke_7.mp3"
+    },
+    {
+      "waktu": "11:40",
+      "kegiatan": "Jam Kedelapan",
+      "suara": "jamke_8.mp3"
+    },
+    {
+      "waktu": "12:25",
+      "kegiatan": "Jam Shalat Dhuhur",
+      "suara": "dhuhur.mp3"
+    },
+    {
+      "waktu": "12.45",
+      "kegiatan": "Jam Kesembilan",
+      "suara": "jamke_9.mp3"
+    },{
+      "waktu": "13:20",
+      "kegiatan": "Jam Kesepuluh",
+      "suara": "jamke_10.mp3"
+    },
+    {
+      "waktu": "13:55",
+      "kegiatan": "Pulang",
+      "suara": "pulang.mp3"
+    }
+  ],
+  "Sabtu": 
+  [
+    {
+      "waktu": "14:25",
+      "kegiatan": "Jam Pertama",
+      "suara": "jamke_1.mp3"
+    },
+    {
+      "waktu": "07:35",
+      "kegiatan": "Jam Kedua",
+      "suara": "jamke_2.mp3"
+    },
+    {
+      "waktu": "08:10",
+      "kegiatan": "Jam Ketiga",
+      "suara": "jamke_3.mp3"
+    },
+    {
+      "waktu": "08:45",
+      "kegiatan": "Jam Keempat",
+      "suara": "jamke_4.mp3"
+    },
+    {
+      "waktu": "09:20",
+      "kegiatan": "Istirahat Pertama",
+      "suara": "istirahat.mp3"
+    },
+    {
+      "waktu": "09:55",
+      "kegiatan": "Jam Kelima",
+      "suara": "jamke_5.mp3"
+    },
+    {
+      "waktu": "10:30",
+      "kegiatan": "Jam Keenam",
+      "suara": "jamke_6.mp3"
+    },
+    {
+      "waktu": "11:05",
+      "kegiatan": "Jam Ketujuh",
+      "suara": "jamke_7.mp3"
+    },
+    {
+      "waktu": "11:40",
+      "kegiatan": "Jam Kedelapan",
+      "suara": "jamke_8.mp3"
+    },
+    {
+      "waktu": "12:25",
+      "kegiatan": "Jam Shalat Dhuhur",
+      "suara": "dhuhur.mp3"
+    },
+    {
+      "waktu": "12.45",
+      "kegiatan": "Jam Kesembilan",
+      "suara": "jamke_9.mp3"
+    },{
+      "waktu": "13:20",
+      "kegiatan": "Jam Kesepuluh",
+      "suara": "jamke_10.mp3"
+    },
+    {
+      "waktu": "13:55",
+      "kegiatan": "Pulang",
+      "suara": "pulang.mp3"
+    }
+  ]
+}
+
