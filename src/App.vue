@@ -165,7 +165,7 @@ const playLagu = async (folder, fileName, idx) => {
     
     status.value.id = idx;
     // Gunakan idx + 1 agar di UI terlihat mulai dari angka 1
-    status.value.text = `${idx + 1}. Memutar ${fileStr}`;
+    status.value.text = `${idx + 1}. ${fileStr}`;
     status.value.isPlaying = true;
     
     await audio.play();
@@ -187,7 +187,7 @@ const playLagu = async (folder, fileName, idx) => {
       } else {
         status.value = {
           isPlaying: false,
-          text: 'Selesai Memutar.',
+          text: 'Menunggu...',
           id: null
         };
       }
@@ -241,11 +241,11 @@ onMounted(async () => {
         
         <div class="w-full sm:w-1/2 mx-auto mt-2 rounded-full shadow-inner pt-2">
           <div class="flex justify-center items-center mb-2 px-1 w-full">
-            <span class="text-xs font-bold text-warning truncate w-48 grow">{{ status.text }}</span>
+            <span class="text-xs font-bold text-warning truncate w-48 grow uppercase">{{ status.text }}</span>
             <span class=" badge badge-sm flex items-center justify-center text-[10px]  font-mono mr-4" v-if="status.isPlaying">{{ formatWaktu(status.currentTime) }}</span>
           </div>
           <input type="range" :min="0" step="0.1" :max="status.duration || 100" v-model="status.currentTime" @input="updateProgressLagu" @mousedown="status.isDragging = true" @mouseup="status.isDragging = false" class="range range-warning range-sm w-100" v-if="status.id" />
-          <div class="controls flex gap-2 items-center justify-center p-2" v-if="status.id">
+          <div class="controls flex gap-2 items-center justify-center p-2" v-if="status.text !== 'Menunggu...'">
             <button class="btn btn-square btn-ghost btn-warning btn-sm btn-outline" :disabled="status.id < 1" @click="playPrev">
               <Icon icon="line-md:chevron-double-left" class="text-xl" />
             </button>
