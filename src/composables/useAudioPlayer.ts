@@ -1,4 +1,4 @@
-import { ref, onUnmounted } from 'vue';
+import { ref } from 'vue';
 import { readFile } from '@tauri-apps/plugin-fs';
 import { documentDir, join } from '@tauri-apps/api/path';
 import type { AudioStatus } from '../types/schedule';
@@ -210,11 +210,6 @@ const setVolume = (val: number) => {
   volume.value = Math.max(0, Math.min(1, val));
   audio.volume = volume.value;
 };
-
-onUnmounted(() => {
-  cleanUpAudio();
-  revokeCurrentBlob();
-});
 
 export function useAudioPlayer() {
   return {

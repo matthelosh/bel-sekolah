@@ -1,4 +1,4 @@
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { read, utils, writeFile as xlsxWriteFile } from 'xlsx';
 import { readFile, writeFile as tauriWriteFile, writeTextFile, exists, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { documentDir, join } from '@tauri-apps/api/path';
@@ -147,10 +147,6 @@ const stopScheduleCheck = () => {
     intervalId = null;
   }
 };
-
-onUnmounted(() => {
-  stopScheduleCheck();
-});
 
 export function useSchedule() {
   return {

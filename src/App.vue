@@ -4,6 +4,7 @@ import { Icon } from '@iconify/vue';
 import { useSchedule } from './composables/useSchedule';
 import { useAudioPlayer } from './composables/useAudioPlayer';
 import { useToast } from './composables/useToast';
+import { useInit } from './composables/useInit';
 import ScheduleTable from './components/ScheduleTable.vue';
 import MusicPlayer from './components/MusicPlayer.vue';
 import SettingsPage from './components/SettingsPage.vue';
@@ -17,8 +18,10 @@ const folderAudio = ref('lagunasional');
 const listLagu = ref<{ name: string }[]>([]);
 
 const { toasts, error } = useToast();
+const { initBelFolder } = useInit();
 
 const loadSettings = async () => {
+  if (!isTauri) return;
   try {
     const { readTextFile } = await import('@tauri-apps/plugin-fs');
     const { BaseDirectory } = await import('@tauri-apps/plugin-fs');
@@ -56,10 +59,17 @@ const {
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
 const loadLagu = async () => {
+  if (!isTauri) {
+    listLagu.value = [];
+    return;
+  }
   try {
     const { readDir, BaseDirectory } = await import('@tauri-apps/plugin-fs');
     const entries = await readDir(`bel/${folderAudio.value}`, { baseDir: BaseDirectory.Document });
     listLagu.value = entries.filter(entry => entry.name.endsWith('.mp3'));
+    if (!listLagu.value.length) {
+      error('Folder lagu kosong');
+    }
   } catch (err) {
     console.error('Failed to load music:', err);
     listLagu.value = [];
@@ -120,6 +130,9 @@ const switchView = (view: DisplayView) => {
 
 onMounted(async () => {
   if (isTauri) {
+    await initBelFolder();
+  }
+  if (isTauri) {
     await loadJadwalFromExcel();
   } else {
     await loadJadwal();
@@ -134,6 +147,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   stopScheduleCheck();
+  stopAudio();
 });
 </script>
 
