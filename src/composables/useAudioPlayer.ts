@@ -43,16 +43,17 @@ const playLagu = async (folder: string, fileName: string, idx: number, listLengt
   try {
     const absolutePath = await getAbsolutePath(folder, fileName);
     const data = await readFile(absolutePath);
-    
+
     revokeCurrentBlob();
     cleanUpAudio();
-    
+
     const blob = new Blob([data], { type: 'audio/mpeg' });
     currentBlobUrl = URL.createObjectURL(blob);
-    
+
     audio.src = currentBlobUrl;
     audio.volume = volume.value;
-    
+    audio.preload = 'auto';
+
     status.value = {
       text: `${idx + 1}. ${fileName}`,
       id: idx,
@@ -62,13 +63,13 @@ const playLagu = async (folder: string, fileName: string, idx: number, listLengt
       isDragging: false
     };
     progressLagu.value = 0;
-    
+
     await audio.play();
-    
+
     audio.onloadedmetadata = () => {
       status.value.duration = audio.duration;
     };
-    
+
     audio.ontimeupdate = () => {
       if (!status.value.isDragging) {
         status.value.currentTime = audio.currentTime;
@@ -77,11 +78,11 @@ const playLagu = async (folder: string, fileName: string, idx: number, listLengt
         }
       }
     };
-    
+
     audio.onended = () => {
       revokeCurrentBlob();
       progressLagu.value = 0;
-      
+
       if (idx < listLength - 1) {
         // Auto-next will be handled by caller or via event
       } else {
@@ -106,16 +107,17 @@ const playBell = async (soundFile: string) => {
   try {
     const absolutePath = await getAbsolutePath('lonceng', soundFile);
     const data = await readFile(absolutePath);
-    
+
     revokeCurrentBlob();
     cleanUpAudio();
-    
+
     const blob = new Blob([data], { type: 'audio/mpeg' });
     currentBlobUrl = URL.createObjectURL(blob);
-    
+
     audio.src = currentBlobUrl;
     audio.volume = volume.value;
-    
+    audio.preload = 'auto';
+
     status.value = {
       text: soundFile,
       id: -1,
@@ -125,13 +127,13 @@ const playBell = async (soundFile: string) => {
       isDragging: false
     };
     progressLagu.value = 0;
-    
+
     await audio.play();
-    
+
     audio.onloadedmetadata = () => {
       status.value.duration = audio.duration;
     };
-    
+
     audio.ontimeupdate = () => {
       if (!status.value.isDragging) {
         status.value.currentTime = audio.currentTime;
@@ -140,7 +142,7 @@ const playBell = async (soundFile: string) => {
         }
       }
     };
-    
+
     audio.onended = () => {
       revokeCurrentBlob();
       status.value = {
@@ -171,7 +173,6 @@ const togglePause = () => {
 
 const stopAudio = () => {
   cleanUpAudio();
-  revokeCurrentBlob();
   status.value = {
     text: 'Menunggu...',
     id: null,

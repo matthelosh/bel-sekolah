@@ -155,21 +155,25 @@ onBeforeUnmount(() => {
   <div class="w-screen min-h-screen bg-sky-950">
     <ToastContainer :toasts="toasts" />
     <div class="status-app w-full text-center p-2 bg-sky-950 flex items-center justify-center relative">
-      <div class="status-content text-center w-full">
-        <h1 class="font-bold text-2xl text-white absolute left-10">Bell Sekolah</h1>
-        <button
-          class="absolute left-10 top-2 btn btn-ghost btn-sm text-white"
+      <div class="status-content text-center  flex items-center  px-4">
+        <h1 class="font-bold text-2xl text-white">Bell Sekolah</h1>
+          <button
+          class="btn btn-ghost btn-sm text-white"
           @click="switchView('editor')"
         >
-          <Icon icon="line-md:calendar-edit" class="text-xl" />
+          <Icon icon="mdi:calendar-edit" class="text-xl" />
+          Edit Jadwal
         </button>
         <button
-          class="absolute left-1/2 top-2 -translate-x-1/2 btn btn-ghost btn-sm text-white"
+          class="btn btn-ghost btn-sm text-white"
           @click="switchView(display === 'bel' ? 'settings' : 'bel')"
         >
-          <Icon :icon="display === 'bel' ? 'line-md:settings' : 'line-md:home'" class="text-xl" />
+          <Icon :icon="display === 'bel' ? 'mdi:settings' : 'mdi:home'" class="text-xl" />
+          {{display==='bel' ? 'Pengaturan' : 'Beranda'}}
         </button>
-        <h1 class="text-4xl uppercase font-bold text-orange-50 absolute right-10">{{ currentTime }}</h1>
+
+      </div>
+      <h1 class="text-4xl uppercase font-bold text-orange-50 absolute right-10">{{ currentTime }}</h1>
 
         <div v-if="display === 'bel'" class="w-full sm:w-1/2 mx-auto mt-2 rounded-full shadow-inner pt-2">
           <div class="flex justify-center items-center mb-2 px-1 w-full">
@@ -212,7 +216,6 @@ onBeforeUnmount(() => {
           </div>
         </div>
       </div>
-    </div>
 
     <div v-if="display === 'bel'" class="content grid grid-cols-12 gap-6 px-4 lg:px-16 py-4 w-screen">
       <ScheduleTable :jadwals="jadwals" @play="handlePlayBell" />
