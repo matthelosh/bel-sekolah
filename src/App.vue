@@ -113,7 +113,10 @@ const handlePrev = async () => {
   }
 };
 
-const handleFolderChange = async () => {
+const handleFolderChange = async (folder: string) => {
+  if (folder === folderAudio.value) return;
+  folderAudio.value = folder;
+  stopAudio();
   await loadLagu();
 };
 
