@@ -8,7 +8,7 @@ Aplikasi menyimpan data di folder `Documents/bel/` pada sistem:
 
 ```
 Documents/bel/
-├── jadwal.xlsx          # Jadwal pelajaran per hari
+├── jadwal.json           # Jadwal pelajaran per hari
 ├── settings.json        # Pengaturan aplikasi
 ├── lonceng/             # Audio bel sekolah
 │   ├── jamke_1.mp3
@@ -51,28 +51,26 @@ Halaman **Edit Jadwal** menyediakan pemilih file suara pada kolom `Suara`:
 - **Putar** — tombol play untuk mendengarkan suara sebelum disimpan.
 - Jadwal yang menunjuk file yang sudah hilang ditandai badge `file hilang`.
 
-Kolom `suara` pada `jadwal.xlsx` menyimpan nama file (contoh: `jamke_1.mp3`).
+Kolom `suara` pada `jadwal.json` menyimpan nama file (contoh: `jamke_1.mp3`).
 
 ## Cara Menyiapkan Jadwal
 
-### Excel (disarankan)
+Jadwal disimpan sebagai satu file JSON di `~/Documents/bel/jadwal.json`, dengan kunci nama hari:
 
-Letakkan file `jadwal.xlsx` di `~/Documents/bel/`.
+```json
+{
+  "Senin": [
+    { "waktu": "07:00", "kegiatan": "Jam Pertama", "suara": "jamke_1.mp3" },
+    { "waktu": "07:35", "kegiatan": "Jam Kedua", "suara": "jamke_2.mp3" }
+  ]
+}
+```
 
-Format Excel:
-- Setiap sheet bernama sesuai hari: `Senin`, `Selasa`, `Rabu`, `Kamis`, `Jumat`, `Sabtu`
-- Kolom: `waktu`, `kegiatan`, `suara` (opsional)
+Kalau file tersebut belum ada, aplikasi menyalin otomatis dari `public/jadwal.json`.
 
-Contoh data:
-| waktu | kegiatan | suara |
-|-------|----------|-------|
-| 07:00 | Jam Pertama | jamke_1.mp3 |
-| 07:35 | Jam Kedua | jamke_2.mp3 |
-| 08:10 | Jam Ketiga | jamke_3.mp3 |
+### Edit Jadwal
 
-### JSON (fallback)
-
-File `jadwal.json` di folder `public/` digunakan sebagai fallback jika `jadwal.xlsx` tidak ditemukan.
+Jadwal dapat diubah langsung dari aplikasi lewat halaman **Edit Jadwal** (tombol di header), lalu disimpan dengan tombol **Simpan Semua**. Field yang bisa diisi: `waktu` (HH:MM), `kegiatan`, dan `suara` (pilih atau impor file `.mp3`). Perubahan hanya berlaku untuk hari yang sedang berjalan — untuk mengganti hari lain, edit file `jadwal.json` langsung atau ubah tanggal sistem.
 
 ## Pengaturan
 
@@ -114,7 +112,7 @@ bun run tauri build
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/) v4
 - [DaisyUI](https://daisyui.com/)
-- [XLSX](https://github.com/SheetJS/sheetjs) untuk Excel
+- [XLSX](https://github.com/SheetJS/sheetjs) untuk Excel (dihapus pada v1.2.4, jadwal kini disimpan sebagai JSON)
 
 ## License
 

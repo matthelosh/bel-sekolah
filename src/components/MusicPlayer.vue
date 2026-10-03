@@ -11,7 +11,7 @@
 
     const emit = defineEmits<{
         "update:folderAudio": [value: string];
-        play: [folder: string, fileName: string, idx: number];
+        play: [folder: string, idx: number];
         prev: [];
         next: [];
         toggle: [];
@@ -56,7 +56,7 @@
                     </div>
                     <button
                         class="btn btn-square btn-primary btn-sm"
-                        @click="emit('play', folderAudio, lagu.name, l)"
+                        @click="emit('play', folderAudio, l)"
                         :disabled="currentId === l && isPlaying">
                         <Icon icon="line-md:play" class="text-xl" />
                     </button>

@@ -28,10 +28,20 @@ const revokeCurrentBlob = () => {
 
 const cleanUpAudio = () => {
   audio.pause();
-  audio.removeAttribute('src');
-  audio.currentTime = 0;
   audio.onended = null;
+  audio.ontimeupdate = null;
+  audio.onloadedmetadata = null;
+  audio.removeAttribute('src');
+  audio.load();
   revokeCurrentBlob();
+};
+
+const resetStartPosition = () => {
+  try {
+    audio.currentTime = 0;
+  } catch {
+    // belum ada resource termuat
+  }
 };
 
 const getAbsolutePath = async (folder: string, fileName: string): Promise<string> => {
@@ -39,7 +49,10 @@ const getAbsolutePath = async (folder: string, fileName: string): Promise<string
   return await join(docPath, 'bel', folder, fileName);
 };
 
-const playLagu = async (folder: string, fileName: string, idx: number, listLength: number) => {
+const playLagu = async (folder: string, files: string[], idx: number) => {
+  const fileName = files[idx];
+  if (!fileName) return;
+
   try {
     const absolutePath = await getAbsolutePath(folder, fileName);
     const data = await readFile(absolutePath);
@@ -53,6 +66,7 @@ const playLagu = async (folder: string, fileName: string, idx: number, listLengt
     audio.src = currentBlobUrl;
     audio.volume = volume.value;
     audio.preload = 'auto';
+    resetStartPosition();
 
     status.value = {
       text: `${idx + 1}. ${fileName}`,
@@ -63,8 +77,6 @@ const playLagu = async (folder: string, fileName: string, idx: number, listLengt
       isDragging: false
     };
     progressLagu.value = 0;
-
-    await audio.play();
 
     audio.onloadedmetadata = () => {
       status.value.duration = audio.duration;
@@ -79,22 +91,25 @@ const playLagu = async (folder: string, fileName: string, idx: number, listLengt
       }
     };
 
+    await audio.play();
+
     audio.onended = () => {
       revokeCurrentBlob();
       progressLagu.value = 0;
 
-      if (idx < listLength - 1) {
-        // Auto-next will be handled by caller or via event
-      } else {
-        status.value = {
-          text: 'Menunggu...',
-          id: null,
-          isPlaying: false,
-          currentTime: 0,
-          duration: 0,
-          isDragging: false
-        };
+      if (idx < files.length - 1) {
+        void playLagu(folder, files, idx + 1);
+        return;
       }
+
+      status.value = {
+        text: 'Menunggu...',
+        id: null,
+        isPlaying: false,
+        currentTime: 0,
+        duration: 0,
+        isDragging: false
+      };
     };
   } catch (err) {
     console.error('Gagal putar lagu:', err);
@@ -117,6 +132,7 @@ const playBell = async (soundFile: string) => {
     audio.src = currentBlobUrl;
     audio.volume = volume.value;
     audio.preload = 'auto';
+    resetStartPosition();
 
     status.value = {
       text: soundFile,
@@ -127,8 +143,6 @@ const playBell = async (soundFile: string) => {
       isDragging: false
     };
     progressLagu.value = 0;
-
-    await audio.play();
 
     audio.onloadedmetadata = () => {
       status.value.duration = audio.duration;
@@ -142,6 +156,8 @@ const playBell = async (soundFile: string) => {
         }
       }
     };
+
+    await audio.play();
 
     audio.onended = () => {
       revokeCurrentBlob();
@@ -203,8 +219,15 @@ const playPrev = (_listLength: number) => {
 };
 
 const seek = (time: number) => {
-  audio.currentTime = time;
   status.value.currentTime = time;
+  if (audio.duration && time > audio.duration) {
+    return;
+  }
+  try {
+    audio.currentTime = time;
+  } catch {
+    // media belum siap, abaikan
+  }
 };
 
 const setVolume = (val: number) => {

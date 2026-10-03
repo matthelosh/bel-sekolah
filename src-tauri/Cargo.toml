@@ -1,6 +1,6 @@
 [package]
 name = "bel-sekolah"
-version = "1.2.3"
+version = "1.2.4"
 description = "Aplikasi Bel Sekolah Otomatis"
 authors = ["matthelosh"]
 edition = "2021"

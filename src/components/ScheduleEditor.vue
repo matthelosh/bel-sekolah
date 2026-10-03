@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import { Icon } from '@iconify/vue';
 import { useSchedule } from '../composables/useSchedule';
 import { useSoundFiles } from '../composables/useSoundFiles';
 import { useAudioPlayer } from '../composables/useAudioPlayer';
 import { useToast } from '../composables/useToast';
+import ScheduleEntryRow from './ScheduleEntryRow.vue';
 import type { JadwalEntry } from '../types/schedule';
 
 function emptyEntry(): JadwalEntry {
@@ -16,51 +17,79 @@ function emptyEntry(): JadwalEntry {
 }
 
 const {
-  jadwals,
   hari,
-  loadJadwalFromExcel,
-  saveJadwalToExcel,
+  days,
+  getJadwalByDay,
+  loadJadwal,
+  saveJadwal,
   normalizeTime
 } = useSchedule();
 
+const selectedDay = ref(hari.value);
+const entries = ref<JadwalEntry[]>([]);
+const isDirty = ref(false);
+
 const editingEntry = ref<JadwalEntry>(emptyEntry());
+const editingWaktu = ref<string | null>(null);
 const isEditing = ref(false);
-const fileInput = ref<HTMLInputElement | null>(null);
+
+let formRow: HTMLElement | null = null;
+const setFormRow = (el: unknown) => {
+  formRow = (el as HTMLElement | null) ?? null;
+};
+
+const scrollToForm = () => {
+  nextTick(() => {
+    formRow?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+};
 
 const { soundFiles, isImporting, listSoundFiles, importSoundFile, hasSoundFile } = useSoundFiles();
 const { audioStatus, playBell, stopAudio } = useAudioPlayer();
 
-const { error, success } = useToast();
+const { error, success, warning } = useToast();
 
 const isPreviewing = (name?: string) =>
   !!name && audioStatus.value.id === -1 && audioStatus.value.text === name && audioStatus.value.isPlaying;
 
 const previewForm = computed(() => isPreviewing(editingEntry.value.suara));
 
+const selectDay = (day: string) => {
+  if (day === selectedDay.value) return;
+  if (isDirty.value) {
+    warning('Simpan dulu perubahan pada hari ini sebelum pindah hari');
+    return;
+  }
+  cancelEdit();
+  selectedDay.value = day;
+  isDirty.value = false;
+};
+
+watch(selectedDay, day => {
+  entries.value = getJadwalByDay(day);
+});
+
 const startAdd = () => {
   editingEntry.value = emptyEntry();
+  editingWaktu.value = null;
   isEditing.value = true;
+  scrollToForm();
 };
 
 const startEdit = (entry: JadwalEntry) => {
   editingEntry.value = { ...entry };
+  editingWaktu.value = entry.waktu;
   isEditing.value = true;
+  scrollToForm();
 };
 
 const cancelEdit = () => {
   editingEntry.value = emptyEntry();
+  editingWaktu.value = null;
   isEditing.value = false;
 };
 
-const openFilePicker = () => {
-  fileInput.value?.click();
-};
-
-const handleFileSelected = async (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  input.value = '';
-  if (!file) return;
+const handleImport = async (file: File) => {
   try {
     const { name, replaced } = await importSoundFile(file);
     editingEntry.value.suara = name;
@@ -97,27 +126,35 @@ const saveEntry = async () => {
     suara
   };
 
-  const idx = jadwals.value.findIndex(j => j.waktu === normalized.waktu);
+  const previousWaktu = editingWaktu.value;
+  const idx = entries.value.findIndex(j => j.waktu === normalized.waktu);
   if (idx >= 0) {
-    jadwals.value[idx] = normalized;
+    entries.value[idx] = normalized;
   } else {
-    jadwals.value.push(normalized);
+    entries.value.push(normalized);
   }
 
-  jadwals.value.sort((a, b) => a.waktu.localeCompare(b.waktu));
+  if (previousWaktu && previousWaktu !== normalized.waktu) {
+    entries.value = entries.value.filter(j => j.waktu !== previousWaktu);
+  }
+
+  entries.value.sort((a, b) => a.waktu.localeCompare(b.waktu));
+  isDirty.value = true;
 
   cancelEdit();
 };
 
 const deleteEntry = async (entry: JadwalEntry) => {
   if (isPreviewing(entry.suara)) stopAudio();
-  jadwals.value = jadwals.value.filter(j => j.waktu !== entry.waktu);
+  entries.value = entries.value.filter(j => j.waktu !== entry.waktu);
+  isDirty.value = true;
 };
 
-const handleSaveAll = async () => {
+const handleSave = async () => {
   try {
-    await saveJadwalToExcel(jadwals.value);
-    success('Jadwal berhasil disimpan');
+    await saveJadwal(entries.value, selectedDay.value);
+    isDirty.value = false;
+    success(`Jadwal ${selectedDay.value} berhasil disimpan`);
   } catch (err) {
     console.error('Failed to save jadwal:', err);
     error('Gagal menyimpan jadwal');
@@ -125,7 +162,8 @@ const handleSaveAll = async () => {
 };
 
 onMounted(async () => {
-  await Promise.all([loadJadwalFromExcel(), listSoundFiles()]);
+  await Promise.all([loadJadwal(), listSoundFiles()]);
+  entries.value = getJadwalByDay(selectedDay.value);
 });
 </script>
 
@@ -135,102 +173,37 @@ onMounted(async () => {
       <div class="card-header bg-sky-100 p-4 rounded-t-lg flex items-center justify-between">
         <h2 class="card-title text-xl font-bold flex items-center gap-2">
           <Icon icon="line-md:calendar-edit" />
-          Edit Jadwal - {{ hari }}
+          Edit Jadwal - {{ selectedDay }}
         </h2>
         <div class="flex gap-2">
           <button class="btn btn-primary btn-sm" @click="startAdd">
             <Icon icon="line-md:plus" class="text-xl" />
             Tambah
           </button>
-          <button class="btn btn-success btn-sm" @click="handleSaveAll">
+          <button class="btn btn-success btn-sm" :disabled="!isDirty" @click="handleSave">
             <Icon icon="line-md:save" class="text-xl" />
-            Simpan Semua
+            Simpan {{ selectedDay }}
           </button>
         </div>
       </div>
 
       <div class="card-body">
-        <!-- Add/Edit Form -->
-        <div v-if="isEditing" class="mb-6 p-4 border rounded-lg bg-base-100">
-          <h3 class="font-bold mb-3">{{ editingEntry?.waktu ? 'Edit' : 'Tambah' }} Jadwal</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Waktu (HH:MM)</span>
-              </label>
-              <input
-                v-model="editingEntry.waktu"
-                type="text"
-                placeholder="07:00"
-                class="input input-bordered"
-              />
-            </div>
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Kegiatan</span>
-              </label>
-              <input
-                v-model="editingEntry.kegiatan"
-                type="text"
-                placeholder="Jam Pertama"
-                class="input input-bordered"
-              />
-            </div>
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Suara (opsional)</span>
-              </label>
-              <div class="join w-full">
-                <input
-                  v-model="editingEntry.suara"
-                  type="text"
-                  list="daftar-file-suara"
-                  placeholder="jamke_1.mp3"
-                  class="input input-bordered join-item flex-1"
-                />
-                <button
-                  type="button"
-                  class="btn btn-outline join-item"
-                  :disabled="isImporting"
-                  title="Impor file .mp3 ke folder lonceng"
-                  @click="openFilePicker"
-                >
-                  <Icon icon="line-md:folder-plus" class="text-xl" />
-                  Impor
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline join-item"
-                  :disabled="!editingEntry.suara"
-                  :title="previewForm ? 'Hentikan pratinjau' : 'Putar suara'"
-                  @click="togglePreview(editingEntry.suara)"
-                >
-                  <Icon :icon="previewForm ? 'line-md:pause' : 'line-md:play'" class="text-xl" />
-                </button>
-              </div>
-              <datalist id="daftar-file-suara">
-                <option v-for="name in soundFiles" :key="name" :value="name" />
-              </datalist>
-              <input
-                ref="fileInput"
-                type="file"
-                accept=".mp3,audio/mpeg"
-                class="hidden"
-                @change="handleFileSelected"
-              />
-              <label class="label">
-                <span class="label-text-alt normal-case text-gray-500">
-                  {{ soundFiles.length }} file tersedia di Documents/bel/lonceng
-                </span>
-              </label>
-            </div>
-          </div>
-          <div class="flex gap-2 mt-4">
-            <button class="btn btn-success btn-sm" @click="saveEntry">Simpan</button>
-            <button class="btn btn-ghost btn-sm" @click="cancelEdit">Batal</button>
-          </div>
+        <div role="tablist" class="tabs tabs-box mb-4 flex-wrap">
+          <button
+            v-for="day in days"
+            :key="day"
+            role="tab"
+            class="tab gap-1"
+            :class="{ 'tab-active': selectedDay === day }"
+            @click="selectDay(day)"
+          >
+            {{ day }}
+            <span v-if="day === hari" class="badge badge-success badge-xs">hari ini</span>
+          </button>
         </div>
-
+        <p class="text-xs text-gray-500 mb-2">
+          {{ soundFiles.length }} file suara tersedia di Documents/bel/lonceng
+        </p>
         <!-- Schedule List -->
         <div class="overflow-x-auto">
           <table class="table table-zebra">
@@ -244,40 +217,70 @@ onMounted(async () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(entry, index) in jadwals" :key="entry.waktu">
-                <td>{{ index + 1 }}</td>
-                <td>{{ entry.waktu }}</td>
-                <td>{{ entry.kegiatan }}</td>
+              <tr v-if="isEditing && editingWaktu === null" class="bg-sky-100" :ref="setFormRow">
                 <td>
-                  <div class="flex items-center gap-1">
-                    <span>{{ entry.suara || '-' }}</span>
-                    <span
-                      v-if="entry.suara && soundFiles.length && !hasSoundFile(entry.suara)"
-                      class="badge badge-sm badge-error badge-outline"
-                      title="File suara tidak ditemukan di folder lonceng"
-                    >
-                      file hilang
-                    </span>
-                    <button
-                      v-if="entry.suara"
-                      class="btn btn-square btn-ghost btn-sm"
-                      :title="isPreviewing(entry.suara) ? 'Hentikan pratinjau' : 'Putar suara'"
-                      @click="togglePreview(entry.suara)"
-                    >
-                      <Icon :icon="isPreviewing(entry.suara) ? 'line-md:pause' : 'line-md:play'" class="text-xl" />
-                    </button>
-                  </div>
+                  <span class="badge badge-sm badge-primary"> baru </span>
                 </td>
-                <td class="flex gap-1">
-                  <button class="btn btn-square btn-ghost btn-sm" @click="startEdit(entry)">
-                    <Icon icon="line-md:edit" class="text-xl" />
-                  </button>
-                  <button class="btn btn-square btn-ghost btn-sm text-error" @click="deleteEntry(entry)">
-                    <Icon icon="line-md:delete" class="text-xl" />
-                  </button>
-                </td>
+                <ScheduleEntryRow
+                  v-model="editingEntry"
+                  :sound-files="soundFiles"
+                  :is-importing="isImporting"
+                  :is-previewing="previewForm"
+                  @save="saveEntry"
+                  @cancel="cancelEdit"
+                  @import="handleImport"
+                  @toggle-preview="togglePreview(editingEntry.suara)"
+                />
               </tr>
-              <tr v-if="!jadwals.length">
+              <template v-for="(entry, index) in entries" :key="entry.waktu">
+                <tr v-if="editingWaktu === entry.waktu" class="bg-sky-100" :ref="setFormRow">
+                  <td>{{ index + 1 }}</td>
+                  <ScheduleEntryRow
+                    v-model="editingEntry"
+                    :sound-files="soundFiles"
+                    :is-importing="isImporting"
+                    :is-previewing="previewForm"
+                    @save="saveEntry"
+                    @cancel="cancelEdit"
+                    @import="handleImport"
+                    @toggle-preview="togglePreview(editingEntry.suara)"
+                  />
+                </tr>
+                <tr v-else>
+                  <td>{{ index + 1 }}</td>
+                  <td>{{ entry.waktu }}</td>
+                  <td>{{ entry.kegiatan }}</td>
+                  <td>
+                    <div class="flex items-center gap-1">
+                      <span>{{ entry.suara || '-' }}</span>
+                      <span
+                        v-if="entry.suara && soundFiles.length && !hasSoundFile(entry.suara)"
+                        class="badge badge-sm badge-error badge-outline"
+                        title="File suara tidak ditemukan di folder lonceng"
+                      >
+                        file hilang
+                      </span>
+                      <button
+                        v-if="entry.suara"
+                        class="btn btn-square btn-ghost btn-sm"
+                        :title="isPreviewing(entry.suara) ? 'Hentikan pratinjau' : 'Putar suara'"
+                        @click="togglePreview(entry.suara)"
+                      >
+                        <Icon :icon="isPreviewing(entry.suara) ? 'line-md:pause' : 'line-md:play'" class="text-xl" />
+                      </button>
+                    </div>
+                  </td>
+                  <td class="flex gap-1">
+                    <button class="btn btn-square btn-ghost btn-sm" @click="startEdit(entry)">
+                      <Icon icon="line-md:edit" class="text-xl" />
+                    </button>
+                    <button class="btn btn-square btn-ghost btn-sm text-error" @click="deleteEntry(entry)">
+                      <Icon icon="line-md:delete" class="text-xl" />
+                    </button>
+                  </td>
+                </tr>
+              </template>
+              <tr v-if="!entries.length && !isEditing">
                 <td colspan="5" class="text-center text-gray-400">Tidak ada jadwal</td>
               </tr>
             </tbody>

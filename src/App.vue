@@ -38,7 +38,6 @@ const loadSettings = async () => {
 const {
   jadwals,
   loadJadwal,
-  loadJadwalFromExcel,
   startScheduleCheck,
   stopScheduleCheck
 } = useSchedule();
@@ -53,6 +52,7 @@ const {
   stopAudio,
   playNext,
   playPrev,
+  seek,
   setVolume
 } = useAudioPlayer();
 
@@ -83,8 +83,8 @@ const handleScheduleMatch = async (entry: { waktu: string; kegiatan: string; sua
   }
 };
 
-const handlePlayLagu = async (folder: string, fileName: string, idx: number) => {
-  await playLagu(folder, fileName, idx, listLagu.value.length);
+const handlePlayLagu = async (folder: string, idx: number) => {
+  await playLagu(folder, listLagu.value.map(lagu => lagu.name), idx);
 };
 
 const handlePlayBell = async (fileName: string) => {
@@ -99,17 +99,23 @@ const handleStop = () => {
   stopAudio();
 };
 
+const handleSeek = (event: Event) => {
+  seek(Number((event.target as HTMLInputElement).value));
+};
+
 const handleNext = async () => {
-  const nextIdx = playNext(listLagu.value.length);
+  const files = listLagu.value.map(lagu => lagu.name);
+  const nextIdx = playNext(files.length);
   if (nextIdx !== null) {
-    await playLagu(folderAudio.value, listLagu.value[nextIdx].name, nextIdx, listLagu.value.length);
+    await playLagu(folderAudio.value, files, nextIdx);
   }
 };
 
 const handlePrev = async () => {
-  const prevIdx = playPrev(listLagu.value.length);
+  const files = listLagu.value.map(lagu => lagu.name);
+  const prevIdx = playPrev(files.length);
   if (prevIdx !== null) {
-    await playLagu(folderAudio.value, listLagu.value[prevIdx].name, prevIdx, listLagu.value.length);
+    await playLagu(folderAudio.value, files, prevIdx);
   }
 };
 
@@ -135,11 +141,7 @@ onMounted(async () => {
   if (isTauri) {
     await initBelFolder();
   }
-  if (isTauri) {
-    await loadJadwalFromExcel();
-  } else {
-    await loadJadwal();
-  }
+  await loadJadwal();
   await loadLagu();
   await loadSettings();
   startScheduleCheck(handleScheduleMatch);
@@ -194,10 +196,11 @@ onBeforeUnmount(() => {
             :min="0"
             step="0.1"
             :max="audioStatus.duration || 100"
-            v-model="audioStatus.currentTime"
-            @input="$event => audioStatus.currentTime = Number(($event.target as HTMLInputElement).value)"
-            @mousedown="audioStatus.isDragging = true"
-            @mouseup="audioStatus.isDragging = false"
+            :value="audioStatus.currentTime"
+            @input="handleSeek"
+            @pointerdown="audioStatus.isDragging = true"
+            @pointerup="audioStatus.isDragging = false"
+            @pointercancel="audioStatus.isDragging = false"
             class="range range-warning range-sm w-100"
           />
           <div class="controls flex gap-2 items-center justify-center p-2" v-if="audioStatus.text !== 'Menunggu...'">

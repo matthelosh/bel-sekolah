@@ -1,8 +1,11 @@
 import { ref, computed } from 'vue';
-import { read, utils, writeFile as xlsxWriteFile } from 'xlsx';
-import { readFile, writeFile as tauriWriteFile, writeTextFile, exists, BaseDirectory } from '@tauri-apps/plugin-fs';
-import { documentDir, join } from '@tauri-apps/api/path';
+import { readTextFile, writeTextFile, exists, BaseDirectory } from '@tauri-apps/plugin-fs';
 import type { JadwalEntry } from '../types/schedule';
+
+const JADWAL_PATH = 'bel/jadwal.json';
+const DEFAULT_JADWAL_URL = '/jadwal.json';
+
+const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
 const jadwals = ref<JadwalEntry[]>([]);
 const fullJadwal = ref<Record<string, JadwalEntry[]>>({});
@@ -18,126 +21,104 @@ const hari = computed(() => {
 
 const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
+const getJadwalByDay = (day: string): JadwalEntry[] => {
+  return (fullJadwal.value[day] ?? []).map(item => ({ ...item }));
+};
+
+const normalizeEntries = (list: JadwalEntry[]): JadwalEntry[] => {
+  return (list ?? [])
+    .filter(item => item && item.waktu)
+    .map(item => ({
+      waktu: normalizeTime(String(item.waktu)),
+      kegiatan: String(item.kegiatan ?? ''),
+      suara: item.suara ? String(item.suara) : ''
+    }))
+    .sort((a, b) => a.waktu.localeCompare(b.waktu));
+};
+
+const writeStoredJadwal = async (data: Record<string, JadwalEntry[]>): Promise<void> => {
+  await writeTextFile(JADWAL_PATH, JSON.stringify(data, null, 2), { baseDir: BaseDirectory.Document });
+};
+
+const fetchDefaultJadwal = async (): Promise<Record<string, JadwalEntry[]>> => {
+  const response = await fetch(DEFAULT_JADWAL_URL);
+  return (await response.json()) as Record<string, JadwalEntry[]>;
+};
+
 const loadJadwal = async () => {
   try {
-    const response = await fetch('/jadwal.json');
-    const jsonData = await response.json();
-    const defaultJadwal: Record<string, JadwalEntry[]> = jsonData as Record<string, JadwalEntry[]>;
-    fullJadwal.value = defaultJadwal;
-    jadwals.value = ((defaultJadwal[hari.value] || []) as unknown as JadwalEntry[]).map(item => ({
-      ...item,
-      waktu: normalizeTime(item.waktu)
-    }));
-  } catch (err) {
-    console.error('Failed to load default jadwal:', err);
-    error.value = 'Gagal memuat jadwal default';
-  }
-};
+    const hasStored = isTauri
+      ? await exists(JADWAL_PATH, { baseDir: BaseDirectory.Document }).catch(() => false)
+      : false;
 
-const loadJadwalFromExcel = async () => {
-  try {
-    const docPath = await documentDir();
-    const filePath = await join(docPath, 'bel', 'jadwal.xlsx');
-    const fileBin = await readFile(filePath);
-    const wb = read(fileBin, { type: 'array' });
-    
-    fullJadwal.value = {};
-    days.forEach(day => {
-      const ws = wb.Sheets[day];
-      if (ws) {
-        const dataJadwals: Record<string, string>[] = utils.sheet_to_json(ws);
-        fullJadwal.value[day] = (dataJadwals as unknown as JadwalEntry[]).map(item => ({
-          ...item,
-          waktu: normalizeTime(item.waktu)
-        }));
+    let data: Record<string, JadwalEntry[]>;
+    if (hasStored) {
+      const content = await readTextFile(JADWAL_PATH, { baseDir: BaseDirectory.Document });
+      data = JSON.parse(content) as Record<string, JadwalEntry[]>;
+    } else {
+      data = await fetchDefaultJadwal();
+      if (isTauri) {
+        await writeStoredJadwal(data);
       }
-    });
-
-    const todaySheet = wb.Sheets[hari.value];
-    if (todaySheet) {
-      const dataJadwals: Record<string, string>[] = utils.sheet_to_json(todaySheet);
-      jadwals.value = (dataJadwals as unknown as JadwalEntry[]).map(item => ({
-        ...item,
-        waktu: normalizeTime(item.waktu)
-      }));
-    } else {
-      jadwals.value = [];
     }
+
+    if (!data || typeof data !== 'object') {
+      throw new Error('Format jadwal tidak valid');
+    }
+
+    fullJadwal.value = Object.fromEntries(
+      Object.entries(data).map(([day, list]) => [day, normalizeEntries(list)])
+    );
+    jadwals.value = fullJadwal.value[hari.value] ?? [];
   } catch (err) {
-    console.error('Failed to load Excel jadwal:', err);
-    await loadJadwal();
+    console.error('Failed to load jadwal:', err);
+    error.value = 'Gagal memuat jadwal';
+    jadwals.value = [];
   }
 };
 
-const saveJadwalToExcel = async (entries: JadwalEntry[]) => {
-  try {
-    const docPath = await documentDir();
-    const filePath = await join(docPath, 'bel', 'jadwal.xlsx');
-    
-    const existsFile = await exists('bel/jadwal.xlsx', { baseDir: BaseDirectory.Document });
-    let wb: ReturnType<typeof read>;
-    
-    if (existsFile) {
-      const fileBin = await readFile(filePath);
-      wb = read(fileBin, { type: 'array' });
-    } else {
-      wb = utils.book_new();
-    }
-
-    const todayData = entries.map(entry => ({
-      waktu: entry.waktu,
-      kegiatan: entry.kegiatan,
-      suara: entry.suara || ''
-    }));
-
-    const ws = utils.json_to_sheet(todayData);
-    
-    if (existsFile) {
-      wb.Sheets[hari.value] = ws;
-    } else {
-      utils.book_append_sheet(wb, ws, hari.value);
-    }
-
-    const wbout = xlsxWriteFile(wb, 'jadwal.xlsx', { type: 'array' });
-    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const buffer = await blob.arrayBuffer();
-    const data = new Uint8Array(buffer);
-    await tauriWriteFile(filePath, data);
-    
-    return true;
-  } catch (err) {
-    console.error('Failed to save Excel jadwal:', err);
-    throw err;
+const saveJadwal = async (entries: JadwalEntry[], day: string = hari.value): Promise<boolean> => {
+  if (!isTauri) {
+    throw new Error('Penyimpanan jadwal hanya tersedia di aplikasi desktop');
   }
-};
-
-const saveJadwalToJson = async (entries: JadwalEntry[]) => {
   try {
-    const updated = { ...fullJadwal.value };
-    updated[hari.value] = entries;
-    const content = JSON.stringify(updated, null, 2);
-    await writeTextFile('bel/jadwal.json', content, { baseDir: BaseDirectory.Document });
+    const updated: Record<string, JadwalEntry[]> = {
+      ...fullJadwal.value,
+      [day]: normalizeEntries(entries)
+    };
+    await writeStoredJadwal(updated);
+    fullJadwal.value = updated;
+    if (day === hari.value) {
+      jadwals.value = updated[day];
+    }
     return true;
   } catch (err) {
-    console.error('Failed to save JSON jadwal:', err);
+    console.error('Failed to save jadwal:', err);
     throw err;
   }
 };
 
 let intervalId: ReturnType<typeof setInterval> | null = null;
+let lastTriggered = '';
 
 const startScheduleCheck = (onMatch: (entry: JadwalEntry) => void) => {
   intervalId = setInterval(() => {
     const now = new Date();
+    if (now.getSeconds() > 3) return;
+
     const jamMenit = now.toLocaleTimeString('id-ID', {
       hour: '2-digit',
       minute: '2-digit'
     }).replace('.', ':');
-    
+
+    const key = `${hari.value}-${jamMenit}`;
+    if (lastTriggered === key) return;
+
     const match = jadwals.value.find(j => j.waktu === jamMenit);
-    if (match && now.getSeconds() === 0) {
-      onMatch(match);
-    }
+    if (!match) return;
+
+    lastTriggered = key;
+    onMatch(match);
   }, 1000);
 };
 
@@ -152,11 +133,11 @@ export function useSchedule() {
   return {
     jadwals,
     hari,
+    days,
     error,
+    getJadwalByDay,
     loadJadwal,
-    loadJadwalFromExcel,
-    saveJadwalToExcel,
-    saveJadwalToJson,
+    saveJadwal,
     startScheduleCheck,
     stopScheduleCheck,
     normalizeTime

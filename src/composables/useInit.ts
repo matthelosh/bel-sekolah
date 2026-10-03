@@ -61,7 +61,7 @@ export function useInit() {
         await copyPublicToDocument('/lonceng/week_end.mp3', 'bel/lonceng/week_end.mp3');
       }
 
-      const hasJadwal = await exists('bel/jadwal.xlsx', { baseDir: BaseDirectory.Document }).catch(() => false);
+      const hasJadwal = await exists('bel/jadwal.json', { baseDir: BaseDirectory.Document }).catch(() => false);
       if (!hasJadwal) {
         await copyPublicToDocument('/jadwal.json', 'bel/jadwal.json');
       }
