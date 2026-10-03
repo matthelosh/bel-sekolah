@@ -42,6 +42,17 @@ Letakkan semua file audio di folder berikut:
 - **Audio religi**: `~/Documents/bel/religi/`
 - **Lagu pramuka**: `~/Documents/bel/pramuka/`
 
+### Mengganti File Suara
+
+Halaman **Edit Jadwal** menyediakan pemilih file suara pada kolom `Suara`:
+
+- **Impor** — pilih file `.mp3` dari komputer, file otomatis disalin ke `Documents/bel/lonceng/`. Jika nama file sudah ada, file tersebut digantikan.
+- **Daftar** — nama file yang tersedia di folder `lonceng` bisa dipilih dari dropdown tanpa mengetik manual.
+- **Putar** — tombol play untuk mendengarkan suara sebelum disimpan.
+- Jadwal yang menunjuk file yang sudah hilang ditandai badge `file hilang`.
+
+Kolom `suara` pada `jadwal.xlsx` menyimpan nama file (contoh: `jamke_1.mp3`).
+
 ## Cara Menyiapkan Jadwal
 
 ### Excel (disarankan)

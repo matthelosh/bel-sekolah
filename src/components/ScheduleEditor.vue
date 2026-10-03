@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Icon } from '@iconify/vue';
 import { useSchedule } from '../composables/useSchedule';
+import { useSoundFiles } from '../composables/useSoundFiles';
+import { useAudioPlayer } from '../composables/useAudioPlayer';
 import { useToast } from '../composables/useToast';
 import type { JadwalEntry } from '../types/schedule';
 
@@ -23,8 +25,17 @@ const {
 
 const editingEntry = ref<JadwalEntry>(emptyEntry());
 const isEditing = ref(false);
+const fileInput = ref<HTMLInputElement | null>(null);
+
+const { soundFiles, isImporting, listSoundFiles, importSoundFile, hasSoundFile } = useSoundFiles();
+const { audioStatus, playBell, stopAudio } = useAudioPlayer();
 
 const { error, success } = useToast();
+
+const isPreviewing = (name?: string) =>
+  !!name && audioStatus.value.id === -1 && audioStatus.value.text === name && audioStatus.value.isPlaying;
+
+const previewForm = computed(() => isPreviewing(editingEntry.value.suara));
 
 const startAdd = () => {
   editingEntry.value = emptyEntry();
@@ -41,16 +52,49 @@ const cancelEdit = () => {
   isEditing.value = false;
 };
 
+const openFilePicker = () => {
+  fileInput.value?.click();
+};
+
+const handleFileSelected = async (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = '';
+  if (!file) return;
+  try {
+    const { name, replaced } = await importSoundFile(file);
+    editingEntry.value.suara = name;
+    success(replaced ? `File suara diganti: ${name}` : `File suara diimpor: ${name}`);
+  } catch (err) {
+    error(err instanceof Error ? err.message : 'Gagal mengimpor file suara');
+  }
+};
+
+const togglePreview = async (name?: string) => {
+  if (!name) return;
+  if (isPreviewing(name)) {
+    stopAudio();
+    return;
+  }
+  await playBell(name);
+};
+
 const saveEntry = async () => {
   if (!editingEntry.value.waktu || !editingEntry.value.kegiatan) {
     error('Waktu dan kegiatan harus diisi');
     return;
   }
 
+  const suara = editingEntry.value.suara?.trim() ?? '';
+  if (suara && soundFiles.value.length && !hasSoundFile(suara)) {
+    error(`File suara "${suara}" tidak ada di folder lonceng`);
+    return;
+  }
+
   const normalized: JadwalEntry = {
     waktu: normalizeTime(editingEntry.value.waktu),
     kegiatan: editingEntry.value.kegiatan,
-    suara: editingEntry.value.suara || ''
+    suara
   };
 
   const idx = jadwals.value.findIndex(j => j.waktu === normalized.waktu);
@@ -66,6 +110,7 @@ const saveEntry = async () => {
 };
 
 const deleteEntry = async (entry: JadwalEntry) => {
+  if (isPreviewing(entry.suara)) stopAudio();
   jadwals.value = jadwals.value.filter(j => j.waktu !== entry.waktu);
 };
 
@@ -80,7 +125,7 @@ const handleSaveAll = async () => {
 };
 
 onMounted(async () => {
-  await loadJadwalFromExcel();
+  await Promise.all([loadJadwalFromExcel(), listSoundFiles()]);
 });
 </script>
 
@@ -135,12 +180,49 @@ onMounted(async () => {
               <label class="label">
                 <span class="label-text">Suara (opsional)</span>
               </label>
+              <div class="join w-full">
+                <input
+                  v-model="editingEntry.suara"
+                  type="text"
+                  list="daftar-file-suara"
+                  placeholder="jamke_1.mp3"
+                  class="input input-bordered join-item flex-1"
+                />
+                <button
+                  type="button"
+                  class="btn btn-outline join-item"
+                  :disabled="isImporting"
+                  title="Impor file .mp3 ke folder lonceng"
+                  @click="openFilePicker"
+                >
+                  <Icon icon="line-md:folder-plus" class="text-xl" />
+                  Impor
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline join-item"
+                  :disabled="!editingEntry.suara"
+                  :title="previewForm ? 'Hentikan pratinjau' : 'Putar suara'"
+                  @click="togglePreview(editingEntry.suara)"
+                >
+                  <Icon :icon="previewForm ? 'line-md:pause' : 'line-md:play'" class="text-xl" />
+                </button>
+              </div>
+              <datalist id="daftar-file-suara">
+                <option v-for="name in soundFiles" :key="name" :value="name" />
+              </datalist>
               <input
-                v-model="editingEntry.suara"
-                type="text"
-                placeholder="jamke_1.mp3"
-                class="input input-bordered"
+                ref="fileInput"
+                type="file"
+                accept=".mp3,audio/mpeg"
+                class="hidden"
+                @change="handleFileSelected"
               />
+              <label class="label">
+                <span class="label-text-alt normal-case text-gray-500">
+                  {{ soundFiles.length }} file tersedia di Documents/bel/lonceng
+                </span>
+              </label>
             </div>
           </div>
           <div class="flex gap-2 mt-4">
@@ -166,7 +248,26 @@ onMounted(async () => {
                 <td>{{ index + 1 }}</td>
                 <td>{{ entry.waktu }}</td>
                 <td>{{ entry.kegiatan }}</td>
-                <td>{{ entry.suara || '-' }}</td>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <span>{{ entry.suara || '-' }}</span>
+                    <span
+                      v-if="entry.suara && soundFiles.length && !hasSoundFile(entry.suara)"
+                      class="badge badge-sm badge-error badge-outline"
+                      title="File suara tidak ditemukan di folder lonceng"
+                    >
+                      file hilang
+                    </span>
+                    <button
+                      v-if="entry.suara"
+                      class="btn btn-square btn-ghost btn-sm"
+                      :title="isPreviewing(entry.suara) ? 'Hentikan pratinjau' : 'Putar suara'"
+                      @click="togglePreview(entry.suara)"
+                    >
+                      <Icon :icon="isPreviewing(entry.suara) ? 'line-md:pause' : 'line-md:play'" class="text-xl" />
+                    </button>
+                  </div>
+                </td>
                 <td class="flex gap-1">
                   <button class="btn btn-square btn-ghost btn-sm" @click="startEdit(entry)">
                     <Icon icon="line-md:edit" class="text-xl" />
