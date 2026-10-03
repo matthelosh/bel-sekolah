@@ -35,6 +35,7 @@
                 <option value="" disabled>Pilih Musik</option>
                 <option value="lagunasional">Lagu Nasional</option>
                 <option value="religi">Audio Islami</option>
+                <option value="pramuka">Lagu Pramuka</option>
             </select>
         </div>
         <div class="card-body p-0 max-h-[70vh] overflow-auto">

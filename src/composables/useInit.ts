@@ -35,11 +35,13 @@ export function useInit() {
       const loncengPath = await join(belPath, 'lonceng');
       const laguNasionalPath = await join(belPath, 'lagunasional');
       const religiPath = await join(belPath, 'religi');
+      const pramukaPath = await join(belPath, 'pramuka');
 
       await ensureDir(belPath);
       await ensureDir(loncengPath);
       await ensureDir(laguNasionalPath);
       await ensureDir(religiPath);
+      await ensureDir(pramukaPath);
 
       const hasLonceng = await exists('bel/lonceng/jamke_1.mp3', { baseDir: BaseDirectory.Document }).catch(() => false);
       if (!hasLonceng) {

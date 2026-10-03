@@ -17,7 +17,9 @@ Documents/bel/
 │   └── day_end.mp3
 ├── lagunasional/        # Lagu nasional
 │   └── *.mp3
-└── religi/              # Audio religi
+├── religi/              # Audio religi
+│   └── *.mp3
+└── pramuka/             # Lagu pramuka
     └── *.mp3
 ```
 
@@ -29,7 +31,7 @@ Documents/bel/
 2. Buka folder `src-tauri/target/release/bundle/` dan install aplikasi
 3. Jalankan aplikasi
 4. Salin folder `public/lonceng/` ke `Documents/bel/lonceng/`
-5. Salin folder audio lain jika diperlukan ke `Documents/bel/lagunasional/` dan `Documents/bel/religi/`
+5. Salin folder audio lain jika diperlukan ke `Documents/bel/lagunasional/`, `Documents/bel/religi/`, dan `Documents/bel/pramuka/`
 
 ### Metode 2: Letakkan file langsung
 
@@ -38,6 +40,7 @@ Letakkan semua file audio di folder berikut:
 - **Bel sekolah**: `~/Documents/bel/lonceng/`
 - **Lagu nasional**: `~/Documents/bel/lagunasional/`
 - **Audio religi**: `~/Documents/bel/religi/`
+- **Lagu pramuka**: `~/Documents/bel/pramuka/`
 
 ## Cara Menyiapkan Jadwal
 
